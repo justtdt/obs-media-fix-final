@@ -11,8 +11,15 @@ jobs:
       - name: Download SDK
         shell: pwsh
         run: |
-          # 直接拉取官方运行环境作为编译依赖
-          Invoke-WebRequest -Uri https://github.com/obsproject/obs-studio/releases/download/30.0.0/obs-studio-30.0.0-Windows-Full.zip -OutFile obs.zip
+          # 换成 30.1.0 版本的稳定链接
+          $url = "https://github.com/obsproject/obs-studio/releases/download/30.1.0/obs-studio-30.1.0-Windows-Full.zip"
+          Write-Host "正在下载: $url"
+          try {
+            Invoke-WebRequest -Uri $url -OutFile obs.zip -ErrorAction Stop
+          } catch {
+            # 如果 30.1.0 失效，备用 30.0.2
+            Invoke-WebRequest -Uri "https://github.com/obsproject/obs-studio/releases/download/30.0.2/obs-studio-30.0.2-Windows-Full.zip" -OutFile obs.zip
+          }
           Expand-Archive obs.zip -DestinationPath sdk
 
       - name: Compile DLL
