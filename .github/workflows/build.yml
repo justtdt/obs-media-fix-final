@@ -8,19 +8,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download SDK
-        shell: pwsh
+      - name: Install libobs via vcpkg
         run: |
-          # 使用 OBS 官方直接存储在 GitHub 上的开发依赖包，这个链接比 Release 稳得多
-          $url = "https://obsproject.com/downloads/obs-studio-sdk-30.0.0.zip"
-          Write-Host "正在从官方直连下载 SDK..."
-          Invoke-WebRequest -Uri $url -OutFile sdk.zip
-          Expand-Archive sdk.zip -DestinationPath obs-sdk
+          vcpkg install libobs:x64-windows
 
       - name: Configure and Build
         shell: cmd
         run: |
-          cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -Dlibobs_DIR=%CD%/obs-sdk/cmake/libobs
+          cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
           cmake --build build --config Release
 
       - name: Upload DLL
