@@ -8,23 +8,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download SDK
+      - name: Download libobs SDK
         shell: pwsh
         run: |
-          # 换成 30.1.0 版本的稳定链接
-          $url = "https://github.com/obsproject/obs-studio/releases/download/30.1.0/obs-studio-30.1.0-Windows-Full.zip"
-          Write-Host "正在下载: $url"
-          try {
-            Invoke-WebRequest -Uri $url -OutFile obs.zip -ErrorAction Stop
-          } catch {
-            # 如果 30.1.0 失效，备用 30.0.2
-            Invoke-WebRequest -Uri "https://github.com/obsproject/obs-studio/releases/download/30.0.2/obs-studio-30.0.2-Windows-Full.zip" -OutFile obs.zip
-          }
-          Expand-Archive obs.zip -DestinationPath sdk
+          # 下载 30.0 版本的核心 SDK，这个链接目前是最稳的
+          $url = "https://github.com/obsproject/obs-deps/releases/download/libobs-win64-30.0.0/libobs-win64-30.0.0.zip"
+          Write-Host "正在下载 SDK: $url"
+          Invoke-WebRequest -Uri $url -OutFile libobs.zip
+          Expand-Archive libobs.zip -DestinationPath sdk
 
       - name: Compile DLL
         shell: cmd
         run: |
+          # 告诉 CMake 到 sdk 文件夹里找依赖
           cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -Dlibobs_DIR=%CD%/sdk/cmake/libobs
           cmake --build build --config Release
 
