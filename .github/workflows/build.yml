@@ -8,24 +8,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download libobs SDK
-        shell: pwsh
-        run: |
-          # 下载 30.0 版本的核心 SDK，这个链接目前是最稳的
-          $url = "https://github.com/obsproject/obs-deps/releases/download/libobs-win64-30.0.0/libobs-win64-30.0.0.zip"
-          Write-Host "正在下载 SDK: $url"
-          Invoke-WebRequest -Uri $url -OutFile libobs.zip
-          Expand-Archive libobs.zip -DestinationPath sdk
+      # 核心步骤：自动获取 SDK，不再依赖手动 URL
+      - name: Set up OBS SDK
+        uses: scholarat/obs-studio-sdk-action@v1.1.0
+        with:
+          version: '30.0.2'
 
-      - name: Compile DLL
+      - name: Configure and Build
         shell: cmd
         run: |
-          # 告诉 CMake 到 sdk 文件夹里找依赖
-          cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -Dlibobs_DIR=%CD%/sdk/cmake/libobs
+          cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -Dlibobs_DIR=%OBS_STUDIO_SDK%/cmake/libobs
           cmake --build build --config Release
 
-      - name: Upload
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: obs_media_fix_dll
+          name: media-fix-plugin
           path: build/Release/*.dll
